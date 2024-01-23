@@ -1,7 +1,7 @@
-# Cell_models
+# Dorsal_root_ganglion_cell_models
 HOC files for sensory fibers
 
-Source files to model sesnsory axons for DRGS.
+Source files to model sensory axons for dorsal root ganglion stimulation.
 
 Included is the template to generate pseudounipolar sensory axons in the NEURON software environment.
 
