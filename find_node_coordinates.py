@@ -135,7 +135,7 @@ def find_devor_node_coordinates(axon_trajectory, axonName, axonType, fiberD):
         yy.append((1.5+201+1.5+168+1.5+130+1.5+85)*1e-6)
         zz.append(zz[0])
 
-        ## hard code the initial segment and soma
+        ## the initial segment and soma
         # iseg
         xx.append(0)
         yy.append((1.5+201+1.5+168+1.5+130+1.5+85+1.5+200)*1e-6)
