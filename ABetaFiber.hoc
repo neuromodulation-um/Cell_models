@@ -21,37 +21,7 @@ proc model_globels() {
 	space_i=0.004
 	nstins=numberOfStinCompartmentsPerStretch
 
-/*	
-	fiberD_central = 2.0
-	fiberD_peripheral = 5.7
-	fiberD_stem = fiberD_peripheral
-	deltaxC = 117*1e-6
-	deltaxP = 500*1e-6
-*/
 
-/*
-	fiberD_central = 5.7
-	fiberD_peripheral = 7.3
-	fiberD_stem = fiberD_peripheral
-	deltaxC = 500*1e-6
-	deltaxP = 750*1e-6
-
-	nstins = 6
-	pain = 0
-
-	axonnodesP = 100
-	axonnodesC = 100
-	axonnodesT = 5
-	paranodes1P = 2*(axonnodesP-1)
-	paranodes1C = 2*(axonnodesC-1)
-	paranodes1T = 2*(axonnodesT-1)
-	paranodes2P = 2*(axonnodesP-1)
-	paranodes2C = 2*(axonnodesC-1)
-	paranodes2T = 2*(axonnodesT-1)
-	axoninterP = nstins*(axonnodesP-1)
-	axoninterC = nstins*(axonnodesC-1)
-	axoninterT = nstins*(axonnodesT-1)
-*/
 
 //electrical parameters//		
 	rhoa=0.7e6 //Ohm-um//
@@ -60,28 +30,6 @@ proc model_globels() {
 	}
 model_globels()
 
-/*
-objref varLenP
-objref varLenC
-varLenP = new Vector(3)
-varLenC = new Vector(3)	
-
-ratio1stInternodeC = (358*1e-6)/(1450*1e-6)
-ratio2ndInternodeC = (780*1e-6)/(1450*1e-6)
-ratio3rdInternodeC = (1170*1e-6)/(1450*1e-6)
-
-ratio1stInternodeP = (461*1e-6)/(1567*1e-6)
-ratio2ndInternodeP = (670*1e-6)/(1567*1e-6)
-ratio3rdInternodeP = (1119*1e-6)/(1567*1e-6)
-
-varLenP.x[0] = ratio1stInternodeP * deltaxP
-varLenP.x[1] = ratio2ndInternodeP * deltaxP
-varLenP.x[2] = ratio3rdInternodeP * deltaxP
-
-varLenC.x[0] = ratio1stInternodeC * deltaxC
-varLenC.x[1] = ratio2ndInternodeC * deltaxC
-varLenC.x[2] = ratio3rdInternodeC * deltaxC
-*/
 
 proc dependent_var() {
 	// central axon variables
@@ -299,8 +247,6 @@ proc buildCell(){
 			if (i>7) { print "HAVE TOO MANY STINs IN STEM AXON" print i} // this should never execute
 			nseg=1
 			diam=fiberD_stem
-			//L=paralength2_stem
-			// changed L to 35 because smallest fiberD in MRG model has paralength2 of 35
 			L=35
 			Ra=rhoa*(1/(paraD2_stem/fiberD_stem)^2)/10000
 			cm=2*paraD2_stem/fiberD_stem
@@ -312,12 +258,7 @@ proc buildCell(){
 	}
 	for i=0, axoninterP-1 {
 		STINP[i]{ // the first couple interlengths (Ito & Takahashi 1960, Amir and Devor 2003)
-			//if (i>=0 && i<=5)   { len=(461 - nodelength - (2*paralength1) - (2*paralength2_peripheral))/6  } // first internode
-			//if (i>=6 && i<=11)  { len=(670 - nodelength - (2*paralength1) - (2*paralength2_peripheral))/6  } // second internode
-			//if (i>=12 && i<=17) { len=(1119 - nodelength - (2*paralength1) - (2*paralength2_peripheral))/6 } // third internode
-			////if (i>=18 && i<=23) { len=(1567 - nodelength - (2*paralength1) - (2*paralength2_peripheral))/6 } // fourth internode
-			////if (i>23) { len=interlength_peripheral } // any internode after the first 4
-			//if (i>17) { len=interlength_peripheral } // any internode after the first 4
+
 			
 			// account for normalizing variable internode lengths
 			if (i>=0 && i<=5)   { len=(varLenP.x[0]*1e6 - nodelength - (2*paralength1) - (2*paralength2_peripheral))/6  } // first internode
@@ -337,12 +278,7 @@ proc buildCell(){
 		}
 	for i=0, axoninterC-1 {
 		STINC[i]{ // the first couple interlengths (Ito & Takahashi 1960, Amir and Devor 2003)
-			//if (i>=0 && i<=5)   { len=(358 - nodelength - (2*paralength1) - (2*paralength2_central))/6  } // first internode
-			//if (i>=6 && i<=11)  { len=(780 - nodelength - (2*paralength1) - (2*paralength2_central))/6  } // second internode
-			//if (i>=12 && i<=17) { len=(1170 - nodelength - (2*paralength1) - (2*paralength2_central))/6 } // third internode
-			////if (i>=18 && i<=23) { len=(1450 - nodelength - (2*paralength1) - (2*paralength2_central))/6 } // fourth internode
-			////if (i>23) { len=interlength_central } // any internode after the first 4
-			//if (i>17) { len=interlength_central } // any internode after the first 4
+
 
 			// account for normalizing variable internode lengths
 			if (i>=0 && i<=5)   { len=(varLenC.x[0]*1e6 - nodelength - (2*paralength1) - (2*paralength2_central))/6  } // first internode
@@ -362,11 +298,11 @@ proc buildCell(){
 	}
 	for i=0, axoninterT-1 {
 		STINT[i] { //the first couple interlengths (Ito & Takahashi 1960, Amir and Devor 2003)
-			// changed paralength2 to 35, since the smallest MRG fiberD (less than 201 um) has paralength2 of 35
+
 			if (i>=0 && i<=5)   { len=(201 - nodelength - (2*paralength1) - (2*35))/6  nl_stem_tmp=nl_stem*1.0} // first internode
 			if (i>=6 && i<=11)  { len=(168 - nodelength - (2*paralength1) - (2*35))/6  nl_stem_tmp=nl_stem*0.66197} // second internode
 			if (i>=12 && i<=17) { len=(130 - nodelength - (2*paralength1) - (2*35))/6  nl_stem_tmp=nl_stem*0.48592} // third internode
-			// modified 85 to 120 because 85 results in STINT lenghts of -5. Shotened it so that each STIN is 0.8333 microns
+
 			if (i>=18 && i<=23) { len=(85 - nodelength - (2*paralength1) - (2*35))/6  nl_stem_tmp=nl_stem*0.07747} // fourth internode
 			if (i>23) { len=interlength_stem print "HAVE TOO MANY STINs IN STEM AXON" print i} // this should never execute
 			nseg=1
@@ -391,17 +327,13 @@ proc buildCell(){
 		el_sensoryAxnode = v_init		
 		
 		if (pain==1) {
-			//gnabar_sensoryAxnode = gnabar_sensoryAxnode * (450/2000)
-			//gnapbar_sensoryAxnode = gnapbar_sensoryAxnode * (450/2000)
+
 			gnabar_sensoryAxnode = gnabar_sensoryAxnode * (550/2000)
 			gnapbar_sensoryAxnode = gnapbar_sensoryAxnode * (550/2000)
 			gkfbar_sensoryAxnode = gkfbar_sensoryAxnode - (0.20 * gkfbar_sensoryAxnode)
 			gksbar_sensoryAxnode = gksbar_sensoryAxnode - (0.20 * gksbar_sensoryAxnode)	
 		} else {
-			// decrease somatic conductance by factor of 10 from Caffrey et al 1992
-			// or 100/150 channels/um^2 compared to 1000 channels/um^2 in the nodes
-			//gnabar_sensoryAxnode = gnabar_sensoryAxnode * (150/2000) // Caffrey et al 1992
-			//gnapbar_sensoryAxnode = gnapbar_sensoryAxnode * (150/2000) // Caffrey et al 1992
+
 			gnabar_sensoryAxnode = gnabar_sensoryAxnode * (300/2000) // Rosenbluth and Matsumoto 1985
 			gnapbar_sensoryAxnode = gnapbar_sensoryAxnode * (300/2000) // Rosenbluth and Matsumoto 1985	
 		}
@@ -419,13 +351,9 @@ proc buildCell(){
 		if (pain==1) {
 			gnabar_sensoryAxnode = gnabar_sensoryAxnode * (500/2000) // close to Matsumoto and Rosenbluth 1985
 			gnapbar_sensoryAxnode = gnapbar_sensoryAxnode * (500/2000) // close to Matsumoto and Rosenbluth 1985
-			//gnabar_sensoryAxnode = gnabar_sensoryAxnode * (400/2000)
-			//gnapbar_sensoryAxnode = gnapbar_sensoryAxnode * (400/2000)
-			//gkfbar_sensoryAxnode = gkfbar_sensoryAxnode - (0.20 * gkfbar_sensoryAxnode)
-			//gksbar_sensoryAxnode = gksbar_sensoryAxnode - (0.20 * gksbar_sensoryAxnode)
+
 		} else{
-			// decrease somatic conductance from Caffrey et al 1992
-			// or 100/150 channels/um^2 compared to 1000 channels/um^2 in the nodes
+
 			gnabar_sensoryAxnode = gnabar_sensoryAxnode * (500/2000) // close to Matsumoto and Rosenbluth 1985
 			gnapbar_sensoryAxnode = gnapbar_sensoryAxnode * (500/2000) // close to Matsumoto and Rosenbluth 1985
 		}
@@ -519,67 +447,6 @@ proc initialize(){
 	fcurrent()
 }
 initialize()
-
-/*
-objref apc
-soma apc = new APCount(0.5)
-apc.thresh = 0
-*/
-/*
-objref apcP1, apcP2, apcC1, apcC2, apcS1, apcS2
-objref p1Times, p2Times, c1Times, c2Times, s1Times, s2Times
-nodeP[60] apcP1 = new APCount(0.5)
-nodeP[20] apcP2 = new APCount(0.5)
-nodeC[20] apcC1 = new APCount(0.5)
-nodeC[60] apcC2 = new APCount(0.5)
-nodeT[0] apcS1 = new APCount(0.5)
-nodeT[4] apcS2 = new APCount(0.5)
-p1Times = new Vector()
-p2Times = new Vector()
-c1Times = new Vector()
-c2Times = new Vector()
-s1Times = new Vector()
-s2Times = new Vector()
-apcP1.thresh = 0
-apcP2.thresh = 0
-apcC1.thresh = 0
-apcC2.thresh = 0
-apcS1.thresh = 0
-apcS2.thresh = 0
-apcP1.record(p1Times)
-apcP2.record(p2Times)
-apcC1.record(c1Times)
-apcC2.record(c2Times)
-apcS1.record(s1Times)
-apcS2.record(s2Times)
-
-
-objectvar stim
-nodeP[80] stim = new IClamp(0.5)
-//iseg stim = new IClamp(0.5)
-//soma stim = new IClamp(0.5)
-stim.amp = 0
-stim.dur = 0.2
-stim.del = 5
-
-
-tstop = 50
-
-proc cv() {
-	dxP = (deltax_peripheral * 40) * 1e-6 // 40 total nodes, convert to m
-	dxC = (deltax_central * 40) * 1e-6 // 40 total nodes, convet to m
-	dxS = (deltax_stem * 5) * 1e-6 // 5 total nodes, convet to m
-	dtP = (p2Times.x[0] - p1Times.x[0]) * 1e-3 // convert to s
-	dtC = (c2Times.x[0] - c1Times.x[0]) * 1e-3 // convert to s
-	dtS = (s2Times.x[0] - s1Times.x[0]) * 1e-3 // convert to s
-
-	cvP = dxP/dtP
-	cvC = dxC/dtC
-	cvS = dxS/dtS
-}
-*/
-
-
 
 proc define_geometry() {
 	
@@ -952,64 +819,3 @@ proc define_geometry() {
 }
 define_geometry()
 print "FINISHED DEFINING GEOMETRY"
-
-
-/*
-soma {
-		diam = somaD
-		L = somaL
-		nseg = 1
-		cm = 2
-		Ra=rhoa/10000
-		insert sensoryAxnode
-		insert extracellular xraxial=Rpn0_soma xg=1e10 xc=0	
-		el_sensoryAxnode = v_init
-
-		// decrease somatic conductance by factor of 10 from Caffrey et al 1992
-		// or 100/150 channels/um^2 compared to 1000 channels/um^2 in the nodes
-		//gnabar_sensoryAxnode = gnabar_sensoryAxnode * (300/2000) // Rosenbluth and Matsumoto 1985
-		//gnapbar_sensoryAxnode = gnapbar_sensoryAxnode * (300/2000) // Rosenbluth and Matsumoto 1985
-		//gnabar_sensoryAxnode = gnabar_sensoryAxnode * (300/2000) // this would be Caffrey et al's 0.15*Namax
-		//gnapbar_sensoryAxnode = gnapbar_sensoryAxnode * (300/2000) // this would be Caffrey et al's 0.15*Namax
-		gnabar_sensoryAxnode = gnabar_sensoryAxnode * (475/2000)
-		gnapbar_sensoryAxnode = gnapbar_sensoryAxnode * (475/2000)
-		gkfbar_sensoryAxnode = gkfbar_sensoryAxnode - (0.20 * gkfbar_sensoryAxnode)
-		gksbar_sensoryAxnode = gksbar_sensoryAxnode - (0.20 * gksbar_sensoryAxnode)
-
-		//gnabar_sensoryAxnodeStochastic = gnabar_sensoryAxnodeStochastic * (150/2000) // Caffrey et al 1992
-		//gnapbar_sensoryAxnodeStochastic = gnapbar_sensoryAxnodeStochastic * (150/2000) // Caffrey et al 1992
-		//gnabar_sensoryAxnodeStochastic = gnabar_sensoryAxnodeStochastic * (400/2000)
-		//gnapbar_sensoryAxnodeStochastic = gnapbar_sensoryAxnodeStochastic * (400/2000)
-		//gkfbar_sensoryAxnodeStochastic = gkfbar_sensoryAxnodeStochastic - (0.20 * gkfbar_sensoryAxnode)
-		//gksbar_sensoryAxnodeStochastic = gksbar_sensoryAxnodeStochastic - (0.20 * gksbar_sensoryAxnode)
-	}
-	iseg {
-		diam = isegD
-		L = isegL
-		nseg = 1
-		cm = 2
-		Ra = rhoa/10000
-		insert sensoryAxnode
-		insert extracellular xraxial=Rpn0_iseg xg=1e10 xc=0
-		el_sensoryAxnode = v_init
-
-		// decrease somatic conductance from Caffrey et al 1992
-		// or 100/150 channels/um^2 compared to 1000 channels/um^2 in the nodes
-		//gnabar_sensoryAxnode = gnabar_sensoryAxnode * (500/2000) // close to Matsumoto and Rosenbluth 1985
-		//gnapbar_sensoryAxnode = gnapbar_sensoryAxnode * (500/2000) // close to Matsumoto and Rosenbluth 1985
-		//gnabar_sensoryAxnode = gnabar_sensoryAxnode * (300/2000) // this would be Caffrey et al's 0.15*Namax
-		//gnapbar_sensoryAxnode = gnapbar_sensoryAxnode * (300/2000) // this would be Caffrey et al's 0.15*Namax
-		gnabar_sensoryAxnode = gnabar_sensoryAxnode * (475/2000)
-		gnapbar_sensoryAxnode = gnapbar_sensoryAxnode * (475/2000)
-		gkfbar_sensoryAxnode = gkfbar_sensoryAxnode - (0.20 * gkfbar_sensoryAxnode)
-		gksbar_sensoryAxnode = gksbar_sensoryAxnode - (0.20 * gksbar_sensoryAxnode)
-
-		//gnabar_sensoryAxnodeStochastic = gnabar_sensoryAxnodeStochastic * (500/2000) // close to Matsumoto and Rosenbluth 1985
-		//gnapbar_sensoryAxnodeStochastic = gnapbar_sensoryAxnodeStochastic * (500/2000) // close to Matsumoto and Rosenbluth 1985
-		//gnabar_sensoryAxnodeStochastic = gnabar_sensoryAxnodeStochastic * (220/1000)
-		//gnapbar_sensoryAxnodeStochastic = gnapbar_sensoryAxnodeStochastic * (220/1000)
-		//gkfbar_sensoryAxnodeStochastic = gkfbar_sensoryAxnodeStochastic - (0.20 * gkfbar_sensoryAxnode)
-		//gksbar_sensoryAxnodeStochastic = gksbar_sensoryAxnodeStochastic - (0.20 * gksbar_sensoryAxnode)
-	}
-*/
-
