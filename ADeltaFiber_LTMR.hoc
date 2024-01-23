@@ -1,0 +1,1043 @@
+/*
+Robert Graham | January, 2019
+	Model of a putative nociceptive ADelta fiber.
+	Nociceptive ADelta fibers likely express sodium channels like Nav1.7 and Nav1.8 similar to C-fibers
+	For review, see Bennett et al 2019, Physiol Rev
+NEURON 7.4
+*/
+
+proc model_globels() {			
+	celsius=37			
+	v_init=-55 //mV//  		
+	//dt=0.005 //ms//         	
+//topological parameters//		
+	//defines: axonnodes; paranodes1; paranodes2; axoninter; axontotal
+//morphological parameters//	
+	//fiberD = see Python code	//choose from 2.0, 5.7, 7.3, 8.7, 10.0, 11.5, 12.8, 14.0, 15.0, 16.0
+	paralength1=3  
+	nodelength=1.0
+	space_p1=0.002  
+	space_p2=0.004
+	space_i=0.004
+	nstins=numberOfStinCompartmentsPerStretch
+	nvarstins=numberOfStinCompartmentsPerVariableStretch
+
+
+
+/*	
+	fiberD_central = 2.0
+	fiberD_peripheral = 5.7
+	fiberD_stem = fiberD_peripheral
+	deltaxC = 117*1e-6
+	deltaxP = 500*1e-6
+*/
+
+/*
+	fiberD_central = 2.0
+	//fiberD_central = 3.0
+	fiberD_peripheral = 3.0
+	//fiberD_peripheral = 5.7
+	fiberD_stem = fiberD_peripheral
+	deltaxC = 117*1e-6
+	//deltaxC = 309*1e-6
+	deltaxP = 309*1e-6
+	//deltaxP = 500*1e-6
+
+	nstins = 6
+	nvarstins = 1
+	pain = 0
+
+	axonnodesP = 100
+	axonnodesC = 100
+	axonnodesT = 5
+	paranodes1P = 2*(axonnodesP-1)
+	paranodes1C = 2*(axonnodesC-1)
+	paranodes1T = 2*(axonnodesT-1)
+	paranodes2P = 2*(axonnodesP-1)
+	paranodes2C = 2*(axonnodesC-1)
+	paranodes2T = 2*(axonnodesT-1)
+	axoninterP = nstins*(axonnodesP-1)
+	axoninterC = nstins*(axonnodesC-1)
+	axoninterT = nstins*(axonnodesT-1)
+*/
+
+//electrical parameters//		
+	rhoa=0.7e6 //Ohm-um//
+	mycm=0.1 //uF/cm2/lamella membrane//
+	mygm=0.001 //S/cm2/lamella membrane//
+}
+model_globels()
+
+/*
+objref varLenP
+objref varLenC
+varLenP = new Vector(3)
+varLenC = new Vector(3)	
+
+ratio1stInternodeC = (358*1e-6)/(1450*1e-6)
+ratio2ndInternodeC = (780*1e-6)/(1450*1e-6)
+ratio3rdInternodeC = (1170*1e-6)/(1450*1e-6)
+
+ratio1stInternodeP = (461*1e-6)/(1567*1e-6)
+ratio2ndInternodeP = (670*1e-6)/(1567*1e-6)
+ratio3rdInternodeP = (1119*1e-6)/(1567*1e-6)
+
+varLenP.x[0] = ratio1stInternodeP * deltaxP
+varLenP.x[1] = ratio2ndInternodeP * deltaxP
+varLenP.x[2] = ratio3rdInternodeP * deltaxP
+
+varLenC.x[0] = ratio1stInternodeC * deltaxC
+varLenC.x[1] = ratio2ndInternodeC * deltaxC
+varLenC.x[2] = ratio3rdInternodeC * deltaxC
+*/
+
+proc dependent_var() {
+	// central axon variables
+	if (fiberD_central==2.0) {axonD_central=1.6 nodeD_central=1.4 paraD1_central=1.4 paraD2_central=1.6 deltax_central=117 paralength2_central=10 nl_central=30}
+	if (fiberD_central==3.0) {axonD_central=2.3 nodeD_central=1.6 paraD1_central=1.6 paraD2_central=2.3 deltax_central=309 paralength2_central=21 nl_central=56}
+	if (fiberD_central==5.7) {g_central=0.605 axonD_central=3.4 nodeD_central=1.9 paraD1_central=1.9 paraD2_central=3.4 deltax_central=500 paralength2_central=35 nl_central=80}
+	if (fiberD_central==7.3) {g_central=0.630 axonD_central=4.6 nodeD_central=2.4 paraD1_central=2.4 paraD2_central=4.6 deltax_central=750 paralength2_central=38 nl_central=100}
+	if (fiberD_central==8.7) {g_central=0.661 axonD_central=5.8 nodeD_central=2.8 paraD1_central=2.8 paraD2_central=5.8 deltax_central=1000 paralength2_central=40 nl_central=110}
+	if (fiberD_central==10.0) {g_central=0.690 axonD_central=6.9 nodeD_central=3.3 paraD1_central=3.3 paraD2_central=6.9 deltax_central=1150 paralength2_central=46 nl_central=120}
+	if (fiberD_central==11.5) {g_central=0.700 axonD_central=8.1 nodeD_central=3.7 paraD1_central=3.7 paraD2_central=8.1 deltax_central=1250 paralength2_central=50 nl_central=130}
+	if (fiberD_central==12.8) {g_central=0.719 axonD_central=9.2 nodeD_central=4.2 paraD1_central=4.2 paraD2_central=9.2 deltax_central=1350 paralength2_central=54 nl_central=135}
+	if (fiberD_central==14.0) {g_central=0.739 axonD_central=10.4 nodeD_central=4.7 paraD1_central=4.7 paraD2_central=10.4 deltax_central=1400 paralength2_central=56 nl_central=140}
+	if (fiberD_central==15.0) {g_central=0.767 axonD_central=11.5 nodeD_central=5.0 paraD1_central=5.0 paraD2_central=11.5 deltax_central=1450 paralength2_central=58 nl_central=145}
+	if (fiberD_central==16.0) {g_central=0.791 axonD_central=12.7 nodeD_central=5.5 paraD1_central=5.5 paraD2_central=12.7 deltax_central=1500 paralength2_central=60 nl_central=150}
+	Rpn0_central=(rhoa*.01)/(PI*((((nodeD_central/2)+space_p1)^2)-((nodeD_central/2)^2)))
+	Rpn1_central=(rhoa*.01)/(PI*((((paraD1_central/2)+space_p1)^2)-((paraD1_central/2)^2)))
+	Rpn2_central=(rhoa*.01)/(PI*((((paraD2_central/2)+space_p2)^2)-((paraD2_central/2)^2)))
+	Rpx_central=(rhoa*.01)/(PI*((((axonD_central/2)+space_i)^2)-((axonD_central/2)^2)))
+	interlength_central=(deltax_central-nodelength-(2*paralength1)-(2*paralength2_central))/6
+
+	// peripheral axon variables
+	if (fiberD_peripheral==2.0) {axonD_peripheral=1.6 nodeD_peripheral=1.4 paraD1_peripheral=1.4 paraD2_peripheral=1.6 deltax_peripheral=117 paralength2_peripheral=10 nl_peripheral=30}
+	if (fiberD_peripheral==3.0) {axonD_peripheral=2.3 nodeD_peripheral=1.6 paraD1_peripheral=1.6 paraD2_peripheral=2.3 deltax_peripheral=309 paralength2_peripheral=21 nl_peripheral=56}
+	if (fiberD_peripheral==5.7) {g_peripheral=0.605 axonD_peripheral=3.4 nodeD_peripheral=1.9 paraD1_peripheral=1.9 paraD2_peripheral=3.4 deltax_peripheral=500 paralength2_peripheral=35 nl_peripheral=80}
+	if (fiberD_peripheral==7.3) {g_peripheral=0.630 axonD_peripheral=4.6 nodeD_peripheral=2.4 paraD1_peripheral=2.4 paraD2_peripheral=4.6 deltax_peripheral=750 paralength2_peripheral=38 nl_peripheral=100}
+	if (fiberD_peripheral==8.7) {g_peripheral=0.661 axonD_peripheral=5.8 nodeD_peripheral=2.8 paraD1_peripheral=2.8 paraD2_peripheral=5.8 deltax_peripheral=1000 paralength2_peripheral=40 nl_peripheral=110}
+	if (fiberD_peripheral==10.0) {g_peripheral=0.690 axonD_peripheral=6.9 nodeD_peripheral=3.3 paraD1_peripheral=3.3 paraD2_peripheral=6.9 deltax_peripheral=1150 paralength2_peripheral=46 nl_peripheral=120}
+	if (fiberD_peripheral==11.5) {g_peripheral=0.700 axonD_peripheral=8.1 nodeD_peripheral=3.7 paraD1_peripheral=3.7 paraD2_peripheral=8.1 deltax_peripheral=1250 paralength2_peripheral=50 nl_peripheral=130}
+	if (fiberD_peripheral==12.8) {g_peripheral=0.719 axonD_peripheral=9.2 nodeD_peripheral=4.2 paraD1_peripheral=4.2 paraD2_peripheral=9.2 deltax_peripheral=1350 paralength2_peripheral=54 nl_peripheral=135}
+	if (fiberD_peripheral==14.0) {g_peripheral=0.739 axonD_peripheral=10.4 nodeD_peripheral=4.7 paraD1_peripheral=4.7 paraD2_peripheral=10.4 deltax_peripheral=1400 paralength2_peripheral=56 nl_peripheral=140}
+	if (fiberD_peripheral==15.0) {g_peripheral=0.767 axonD_peripheral=11.5 nodeD_peripheral=5.0 paraD1_peripheral=5.0 paraD2_peripheral=11.5 deltax_peripheral=1450 paralength2_peripheral=58 nl_peripheral=145}
+	if (fiberD_peripheral==16.0) {g_peripheral=0.791 axonD_peripheral=12.7 nodeD_peripheral=5.5 paraD1_peripheral=5.5 paraD2_peripheral=12.7 deltax_peripheral=1500 paralength2_peripheral=60 nl_peripheral=150}
+	Rpn0_peripheral=(rhoa*.01)/(PI*((((nodeD_peripheral/2)+space_p1)^2)-((nodeD_peripheral/2)^2)))
+	Rpn1_peripheral=(rhoa*.01)/(PI*((((paraD1_peripheral/2)+space_p1)^2)-((paraD1_peripheral/2)^2)))
+	Rpn2_peripheral=(rhoa*.01)/(PI*((((paraD2_peripheral/2)+space_p2)^2)-((paraD2_peripheral/2)^2)))
+	Rpx_peripheral=(rhoa*.01)/(PI*((((axonD_peripheral/2)+space_i)^2)-((axonD_peripheral/2)^2)))
+	interlength_peripheral=(deltax_peripheral-nodelength-(2*paralength1)-(2*paralength2_peripheral))/6
+
+	// t stem axon variables
+	if (fiberD_stem==2.0) {axonD_stem=1.6 nodeD_stem=1.4 paraD1_stem=1.4 paraD2_stem=1.6 deltax_stem=117 paralength2_stem=10 nl_stem=30}
+	if (fiberD_stem==3.0) {axonD_stem=2.3 nodeD_stem=1.6 paraD1_stem=1.6 paraD2_stem=2.3 deltax_stem=309 paralength2_stem=21 nl_stem=56}
+	if (fiberD_stem==5.7) {g_stem=0.605 axonD_stem=3.4 nodeD_stem=1.9 paraD1_stem=1.9 paraD2_stem=3.4 deltax_stem=500 paralength2_stem=35 nl_stem=80}
+	if (fiberD_stem==7.3) {g_stem=0.630 axonD_stem=4.6 nodeD_stem=2.4 paraD1_stem=2.4 paraD2_stem=4.6 deltax_stem=750 paralength2_stem=38 nl_stem=100}
+	if (fiberD_stem==8.7) {g_stem=0.661 axonD_stem=5.8 nodeD_stem=2.8 paraD1_stem=2.8 paraD2_stem=5.8 deltax_stem=1000 paralength2_stem=40 nl_stem=110}
+	if (fiberD_stem==10.0) {g_stem=0.690 axonD_stem=6.9 nodeD_stem=3.3 paraD1_stem=3.3 paraD2_stem=6.9 deltax_stem=1150 paralength2_stem=46 nl_stem=120}
+	if (fiberD_stem==11.5) {g_stem=0.700 axonD_stem=8.1 nodeD_stem=3.7 paraD1_stem=3.7 paraD2_stem=8.1 deltax_stem=1250 paralength2_stem=50 nl_stem=130}
+	if (fiberD_stem==12.8) {g_stem=0.719 axonD_stem=9.2 nodeD_stem=4.2 paraD1_stem=4.2 paraD2_stem=9.2 deltax_stem=1350 paralength2_stem=54 nl_stem=135}
+	if (fiberD_stem==14.0) {g_stem=0.739 axonD_stem=10.4 nodeD_stem=4.7 paraD1_stem=4.7 paraD2_stem=10.4 deltax_stem=1400 paralength2_stem=56 nl_stem=140}
+	if (fiberD_stem==15.0) {g_stem=0.767 axonD_stem=11.5 nodeD_stem=5.0 paraD1_stem=5.0 paraD2_stem=11.5 deltax_stem=1450 paralength2_stem=58 nl_stem=145}
+	if (fiberD_stem==16.0) {g_stem=0.791 axonD_stem=12.7 nodeD_stem=5.5 paraD1_stem=5.5 paraD2_stem=12.7 deltax_stem=1500 paralength2_stem=60 nl_stem=150}
+	Rpn0_stem=(rhoa*.01)/(PI*((((nodeD_stem/2)+space_p1)^2)-((nodeD_stem/2)^2)))
+	Rpn1_stem=(rhoa*.01)/(PI*((((paraD1_stem/2)+space_p1)^2)-((paraD1_stem/2)^2)))
+	Rpn2_stem=(rhoa*.01)/(PI*((((paraD2_stem/2)+space_p2)^2)-((paraD2_stem/2)^2)))
+	Rpx_stem=(rhoa*.01)/(PI*((((axonD_stem/2)+space_i)^2)-((axonD_stem/2)^2)))
+
+	// soma and iseg variables
+	somaD = 34 // Yoshida and Matsuda 1979 --> major axis | also see Harper and Lawson 1985
+	somaL = 29 // Yoshida and Matsuda 1979 --> minor axis | also see Harper and Lawson 1985
+	Rpn0_soma = (rhoa*.01)/(PI*((((somaD/2)+space_p1)^2)-((somaD/2)^2)))
+
+	// temporarily setting this deltax value so cell stays within ganglion
+	deltax_stem = 80
+	interlength_stem=(deltax_stem-nodelength-(2*paralength1)-(2*paralength2_stem))/6
+	}
+dependent_var()
+
+// create central (C), peripheral (P), and T stem (T) axon compartments
+create nodeP[axonnodesP], MYSAP[paranodes1P], FLUTP[paranodes2P], STINP[axoninterP]
+create nodeC[axonnodesC], MYSAC[paranodes1C], FLUTC[paranodes2C], STINC[axoninterC]
+
+if (variable_STIN == 1) {
+	create STINPvar[axonremaininginterP]
+	create STINCvar[axonremaininginterC]
+} else {
+	create STINPvar[2]
+	create STINCvar[2]
+}
+
+// make nodeT[0] the TSTEM node
+create nodeT[axonnodesT], MYSAT[paranodes1T], FLUTT[paranodes2T], STINT[axoninterT]
+
+// create soma and iseg
+create soma//, iseg
+
+access nodeP[0]
+
+//normal initialize
+proc buildCell(){
+	// initialize peripheral nodes
+	for i=0, axonnodesP-1 {
+		nodeP[i]{
+			nseg=1
+			diam=nodeD_peripheral
+			L=nodelength
+			Ra=rhoa/10000
+			cm=2
+			insert nav1p7
+			insert nav1p8
+			insert kdr
+			insert ka
+			insert extracellular xraxial=Rpn0_peripheral xg=1e10 xc=0
+			}
+		}
+	// initialize central nodes
+	for i=0, axonnodesC-1 {
+		nodeC[i]{
+			nseg = 1
+			diam=nodeD_central
+			L=nodelength
+			Ra=rhoa/10000
+			cm=2
+			insert nav1p7
+			insert nav1p8
+			insert kdr
+			insert ka
+			insert extracellular xraxial=Rpn0_central xg=1e10 xc=0
+		}
+	}
+	for i=0, axonnodesT-1 {
+		nodeT[i]{
+			nseg=1
+			diam=nodeD_stem
+			L=nodelength
+			Ra=rhoa/10000
+			cm=2
+			insert nav1p7
+			insert nav1p8
+			insert kdr
+			insert ka
+			insert extracellular xraxial=Rpn0_stem xg=1e10 xc=0
+		}
+	}
+	for i=0, paranodes1P-1 {
+		MYSAP[i]{
+			nseg=1
+			diam=fiberD_peripheral
+			L=paralength1
+			Ra=rhoa*(1/(paraD1_peripheral/fiberD_peripheral)^2)/10000
+			cm=2*paraD1_peripheral/fiberD_peripheral
+			insert pas
+			g_pas=0.001*paraD1_peripheral/fiberD_peripheral
+			e_pas=v_init
+			insert extracellular xraxial=Rpn1_peripheral xg=mygm/(nl_peripheral*2) xc=mycm/(nl_peripheral*2)
+			}
+		}
+	for i=0, paranodes1C-1 {
+		MYSAC[i]{
+			nseg=1
+			diam=fiberD_central
+			L=paralength1
+			Ra=rhoa*(1/(paraD1_central/fiberD_central)^2)/10000
+			cm=2*paraD1_central/fiberD_central
+			insert pas
+			g_pas=0.001*paraD1_central/fiberD_central
+			e_pas=v_init
+			insert extracellular xraxial=Rpn1_central xg=mygm/(nl_central*2) xc=mycm/(nl_central*2)
+			}
+	}
+	for i=0, paranodes1T-1 {
+		MYSAT[i] {
+			if (i==0 || i==1)   { nl_stem_tmp=nl_stem*1.0 } // first internode
+			if (i==2 || i==3)  	{ nl_stem_tmp=nl_stem*0.66197  } // second internode
+			if (i==4 || i==5) 	{ nl_stem_tmp=nl_stem*0.48592  } // third internode
+			if (i==6 || i==7)	{ nl_stem_tmp=nl_stem*0.07747  } // fourth internode
+			if (i>7) { print "HAVE TOO MANY STINs IN STEM AXON" print i} // this should never execute
+			nseg=1
+			diam=fiberD_stem
+			L=paralength1
+			Ra=rhoa*(1/(paraD1_stem/fiberD_stem)^2)/10000
+			cm=2*paraD1_stem/fiberD_stem
+			insert pas
+			g_pas=0.001*paraD1_stem/fiberD_stem
+			e_pas=v_init
+			insert extracellular xraxial=Rpn1_stem xg=mygm/(nl_stem_tmp*2) xc=mycm/(nl_stem_tmp*2)
+		}
+	}
+	for i=0, paranodes2P-1 {
+		FLUTP[i]{
+			nseg=1
+			diam=fiberD_peripheral
+			L=paralength2_peripheral
+			Ra=rhoa*(1/(paraD2_peripheral/fiberD_peripheral)^2)/10000
+			cm=2*paraD2_peripheral/fiberD_peripheral
+			insert pas
+			g_pas=0.0001*paraD2_peripheral/fiberD_peripheral
+			e_pas=v_init
+			insert extracellular xraxial=Rpn2_peripheral xg=mygm/(nl_peripheral*2) xc=mycm/(nl_peripheral*2)
+			}
+		}
+	for i=0, paranodes2C-1 {
+		FLUTC[i]{
+			nseg=1
+			diam=fiberD_central
+			L=paralength2_central
+			Ra=rhoa*(1/(paraD2_central/fiberD_central)^2)/10000
+			cm=2*paraD2_central/fiberD_central
+			insert pas
+			g_pas=0.0001*paraD2_central/fiberD_central
+			e_pas=v_init
+			insert extracellular xraxial=Rpn2_central xg=mygm/(nl_central*2) xc=mycm/(nl_central*2)
+			}
+	}
+	for i=0, paranodes2T-1 {
+		FLUTT[i] {
+			if (i==0 || i==1)   { nl_stem_tmp=nl_stem*1.0 } // first internode
+			if (i==2 || i==3)  	{ nl_stem_tmp=nl_stem*0.66197  } // second internode
+			if (i==4 || i==5) 	{ nl_stem_tmp=nl_stem*0.48592  } // third internode
+			if (i==6 || i==7)	{ nl_stem_tmp=nl_stem*0.07747  } // fourth internode
+			if (i>7) { print "HAVE TOO MANY STINs IN STEM AXON" print i} // this should never execute
+			nseg=1
+			diam=fiberD_stem
+			//L=paralength2_stem
+			// changed L to 35 because smallest fiberD in MRG model has paralength2 of 35
+			L=21
+			Ra=rhoa*(1/(paraD2_stem/fiberD_stem)^2)/10000
+			cm=2*paraD2_stem/fiberD_stem
+			insert pas
+			g_pas=0.0001*paraD2_stem/fiberD_stem
+			e_pas=v_init
+			insert extracellular xraxial=Rpn2_stem xg=mygm/(nl_stem_tmp*2) xc=mycm/(nl_stem_tmp*2)
+		}
+	}
+	for i=0, axoninterP-1 {
+		STINP[i]{ // hardcode the first couple interlengths (Ito & Takahashi 1960, Amir and Devor 2003)
+		
+			// account for normalizing variable internode lengths
+			if (i>=0 && i<=5)   { len=(varLenP.x[0]*1e6 - nodelength - (2*paralength1) - (2*paralength2_peripheral))/6  } // first internode
+			if (i>=6 && i<=11)  { len=(varLenP.x[1]*1e6 - nodelength - (2*paralength1) - (2*paralength2_peripheral))/6  } // second internode
+			if (i>=12 && i<=17) { len=(varLenP.x[2]*1e6 - nodelength - (2*paralength1) - (2*paralength2_peripheral))/6 } // third internode
+			if (i>17) { len=interlength_peripheral } // any internode after the first 4
+			nseg=1
+			diam=fiberD_peripheral
+			L=len
+			Ra=rhoa*(1/(axonD_peripheral/fiberD_peripheral)^2)/10000
+			cm=2*axonD_peripheral/fiberD_peripheral
+			insert pas
+			g_pas=0.0001*axonD_peripheral/fiberD_peripheral
+			e_pas=v_init
+			insert extracellular xraxial=Rpx_peripheral xg=mygm/(nl_peripheral*2) xc=mycm/(nl_peripheral*2)
+			}
+		}
+	for i=0, axoninterC-1 {
+		STINC[i]{ // hardcode the first couple interlengths (Ito & Takahashi 1960, Amir and Devor 2003)
+			// account for normalizing variable internode lengths
+			if (i>=0 && i<=5)   { len=(varLenC.x[0]*1e6 - nodelength - (2*paralength1) - (2*paralength2_central))/6  } // first internode
+			if (i>=6 && i<=11)  { len=(varLenC.x[1]*1e6 - nodelength - (2*paralength1) - (2*paralength2_central))/6  } // second internode
+			if (i>=12 && i<=17) { len=(varLenC.x[2]*1e6 - nodelength - (2*paralength1) - (2*paralength2_central))/6 } // third internode
+			if (i>17) { len=interlength_central } // any internode after the first 4
+			nseg=1
+			diam=fiberD_central
+			L=len
+			Ra=rhoa*(1/(axonD_central/fiberD_central)^2)/10000
+			cm=2*axonD_central/fiberD_central
+			insert pas
+			g_pas=0.0001*axonD_central/fiberD_central
+			e_pas=v_init
+			insert extracellular xraxial=Rpx_central xg=mygm/(nl_central*2) xc=mycm/(nl_central*2)
+			}
+	}
+	for i=0, axoninterT-1 {
+		STINT[i] { // hardcode the first couple interlengths (Ito & Takahashi 1960, Amir and Devor 2003)
+			// changed paralength2 to 21, since the smallest MRG fiberD (less than 201 um) has paralength2 of 21
+			if (i>=0 && i<=5)   { len=(260 - nodelength - (2*paralength1) - (2*21))/6  nl_stem_tmp=nl_stem*1.0} // first internode
+			if (i>=6 && i<=11)  { len=(241 - nodelength - (2*paralength1) - (2*21))/6  nl_stem_tmp=nl_stem*0.66197} // second internode
+			if (i>=12 && i<=17) { len=(185 - nodelength - (2*paralength1) - (2*21))/6  nl_stem_tmp=nl_stem*0.48592} // third internode
+			if (i>=18 && i<=23) { len=(123 - nodelength - (2*paralength1) - (2*21))/6  nl_stem_tmp=nl_stem*0.07747} // fourth internode
+			if (i>23) { len=interlength_stem print "HAVE TOO MANY STINs IN STEM AXON" print i} // this should never execute
+			nseg=1
+			diam=fiberD_stem
+			L=len
+			Ra=rhoa*(1/(axonD_stem/fiberD_stem)^2)/10000
+			cm=2*axonD_stem/fiberD_stem
+			insert pas
+			g_pas=0.0001*axonD_stem/fiberD_stem
+			e_pas=v_init
+			insert extracellular xraxial=Rpx_stem xg=mygm/(nl_stem_tmp*2) xc=mycm/(nl_stem_tmp*2)
+		}
+	}
+	if (variable_STIN == 1) {
+		for i=0, axonremaininginterP-1 {
+			STINPvar[i] {
+				nseg=1
+				diam=fiberD_peripheral
+				L=interlength_peripheral*6
+				Ra=rhoa*(1/(axonD_peripheral/fiberD_peripheral)^2)/10000
+				cm=2*axonD_peripheral/fiberD_peripheral
+				insert pas
+				g_pas=0.0001*axonD_peripheral/fiberD_peripheral
+				e_pas=v_init
+				insert extracellular xraxial=Rpx_peripheral xg=mygm/(nl_peripheral*2) xc=mycm/(nl_peripheral*2)
+			}
+		}
+		for i=0, axonremaininginterC-1 {
+			STINCvar[i] {
+				nseg=1
+				diam=fiberD_central
+				L=interlength_central*6
+				Ra=rhoa*(1/(axonD_central/fiberD_central)^2)/10000
+				cm=2*axonD_central/fiberD_central
+				insert pas
+				g_pas=0.0001*axonD_central/fiberD_central
+				e_pas=v_init
+				insert extracellular xraxial=Rpx_central xg=mygm/(nl_central*2) xc=mycm/(nl_central*2)
+			}
+		}
+	} else {
+		forsec "STINCvar" { delete_section() }
+		forsec "STINPvar" { delete_section() }
+	}
+	soma {
+		diam = somaD
+		L = somaL
+		nseg = 1
+		cm = 2
+		Ra=rhoa/10000
+		insert nav1p7
+		insert nav1p8
+		insert kdr
+		insert ka
+		insert extracellular xraxial=Rpn0_soma xg=1e10 xc=0	
+	}
+	forsec "node" {
+		gna1p7bar_nav1p7 = 3.0
+		gna1p8bar_nav1p8 = 3.0
+		insert pas
+		g_pas = 0.002
+		e_pas = v_init
+	}
+	soma {
+		gna1p8bar_nav1p8 = 0.3
+		gkdrbar_kdr = 0.006
+		gkabar_ka = 0.28
+
+		insert pas
+		g_pas = 0.002
+		e_pas = v_init
+
+		//if (pain==1) {
+		//	gna1p7bar_nav1p7 = gna1p7bar_nav1p7 * 1.5
+		//	gna1p8bar_nav1p8 = gna1p8bar_nav1p8 * 1.5
+		//	gkdrbar_kdr = gkdrbar_kdr - (0.20 * gkdrbar_kdr)
+		//	gkabar_ka = gkabar_ka - (0.20 * gkabar_ka)	
+		//}
+	}
+}
+buildCell()
+
+
+// connect the whole cell sequentially:
+//	|-| stem
+//	   `| peripheral axon 
+//     `| central axon
+proc connect_all(){
+	forall disconnect()
+
+	// connect stem axon
+	for ii=0, axonnodesT-2{
+		connect MYSAT[2*ii](0), nodeT[ii](1)
+		connect FLUTT[2*ii](0), MYSAT[2*ii](1)
+		connect STINT[nstins*ii](0), FLUTT[2*ii](1)
+
+		for jj=0, nstins-2 {
+			connect STINT[nstins*ii+jj+1](0), STINT[nstins*ii+jj](1)
+		}
+
+		connect FLUTT[2*ii+1](0), STINT[nstins*ii+nstins-1](1)
+		connect MYSAT[2*ii+1](0), FLUTT[2*ii+1](1)
+		connect nodeT[ii+1](0), MYSAT[2*ii+1](1)
+
+		if (ii==axonnodesT-2) {
+			//connect iseg(0), nodeT[ii+1](1)
+			//connect soma(0), iseg(1)
+			connect soma(0), nodeT[ii+1](1)
+		}
+	}
+
+	print "FINISHED CONNECTING TSTEM"
+
+
+	// connect peripheral axon
+	for ii=0, axonnodesP-2 {
+		if (ii==0) {
+			connect nodeP[ii](0), nodeT[0](0)
+		}
+
+		connect MYSAP[2*ii](0), nodeP[ii](1)
+		connect FLUTP[2*ii](0), MYSAP[2*ii](1)
+
+		if (variable_STIN == 1) {
+			if (ii <= numNodes20mmPeripheral-1) {
+				connect STINP[nstins*ii](0), FLUTP[2*ii](1)
+
+				for jj=0, nstins-2 {
+					connect STINP[nstins*ii+jj+1](0), STINP[nstins*ii+jj](1)
+				}
+
+				connect FLUTP[2*ii+1](0), STINP[nstins*ii+nstins-1](1)
+
+			} else {
+				connect STINPvar[ii-numNodes20mmPeripheral](0), FLUTP[2*ii](1)
+				connect FLUTP[2*ii+1](0), STINPvar[ii-numNodes20mmPeripheral](1)
+			}
+		} else {
+			connect STINP[nstins*ii](0), FLUTP[2*ii](1)
+
+			for jj=0, nstins-2 {
+				connect STINP[nstins*ii+jj+1](0), STINP[nstins*ii+jj](1)
+			}
+
+			connect FLUTP[2*ii+1](0), STINP[nstins*ii+nstins-1](1)
+		}
+
+		connect MYSAP[2*ii+1](0), FLUTP[2*ii+1](1)
+		connect nodeP[ii+1](0), MYSAP[2*ii+1](1)
+	}
+
+	print "FINISHED CONNECTING PERIPHERAL AXON"
+	
+
+	// connect central axon
+	for ii=0, axonnodesC-2 {
+		if (ii==0) {
+			connect nodeC[ii](0), nodeT[0](0)
+		}
+
+		connect MYSAC[2*ii](0), nodeC[ii](1)
+		connect FLUTC[2*ii](0), MYSAC[2*ii](1)
+
+		if (variable_STIN == 1) {
+			if (ii <= numNodes20mmCentral-1) {
+				connect STINC[nstins*ii](0), FLUTC[2*ii](1)
+
+				for jj=0, nstins-2 {
+					connect STINC[nstins*ii+jj+1](0), STINC[nstins*ii+jj](1)
+				}
+
+				connect FLUTC[2*ii+1](0), STINC[nstins*ii+nstins-1](1)
+
+			} else {
+				connect STINCvar[ii-numNodes20mmCentral](0), FLUTC[2*ii](1)
+				connect FLUTC[2*ii+1](0), STINCvar[ii-numNodes20mmCentral](1)
+			}
+		} else {
+			connect STINC[nstins*ii](0), FLUTC[2*ii](1)
+
+			for jj=0, nstins-2 {
+				connect STINC[nstins*ii+jj+1](0), STINC[nstins*ii+jj](1)
+			}
+			connect FLUTC[2*ii+1](0), STINC[nstins*ii+nstins-1](1)
+		}
+
+		connect MYSAC[2*ii+1](0), FLUTC[2*ii+1](1)
+		connect nodeC[ii+1](0), MYSAC[2*ii+1](1)
+	}
+
+	print "FINISHED CONNECTING CENTRAL AXON"
+
+	// connect peripheral and central axons
+	connect nodeC[0](0), nodeP[0](0)	
+}
+connect_all()
+print "FINISHED CONNECTING"
+
+
+proc initialize(){
+	finitialize(v_init)
+	fcurrent()
+}
+initialize()
+
+/*
+objref apc
+soma apc = new APCount(0.5)
+apc.thresh = 0
+*/
+/*
+objref apcP1, apcP2, apcC1, apcC2, apcS1, apcS2
+objref p1Times, p2Times, c1Times, c2Times, s1Times, s2Times
+nodeP[60] apcP1 = new APCount(0.5)
+nodeP[20] apcP2 = new APCount(0.5)
+nodeC[20] apcC1 = new APCount(0.5)
+nodeC[60] apcC2 = new APCount(0.5)
+nodeT[0] apcS1 = new APCount(0.5)
+nodeT[4] apcS2 = new APCount(0.5)
+p1Times = new Vector()
+p2Times = new Vector()
+c1Times = new Vector()
+c2Times = new Vector()
+s1Times = new Vector()
+s2Times = new Vector()
+apcP1.thresh = 0
+apcP2.thresh = 0
+apcC1.thresh = 0
+apcC2.thresh = 0
+apcS1.thresh = 0
+apcS2.thresh = 0
+apcP1.record(p1Times)
+apcP2.record(p2Times)
+apcC1.record(c1Times)
+apcC2.record(c2Times)
+apcS1.record(s1Times)
+apcS2.record(s2Times)
+
+
+objectvar stim
+nodeP[80] stim = new IClamp(0.5)
+//iseg stim = new IClamp(0.5)
+//soma stim = new IClamp(0.5)
+stim.amp = 0
+stim.dur = 0.2
+stim.del = 5
+*/
+
+/*
+proc cv() {
+	dxP = (deltax_peripheral * 40) * 1e-6 // 40 total nodes, convert to m
+	dxC = (deltax_central * 40) * 1e-6 // 40 total nodes, convet to m
+	dxS = (deltax_stem * 5) * 1e-6 // 5 total nodes, convet to m
+	dtP = (p2Times.x[0] - p1Times.x[0]) * 1e-3 // convert to s
+	dtC = (c2Times.x[0] - c1Times.x[0]) * 1e-3 // convert to s
+	dtS = (s2Times.x[0] - s1Times.x[0]) * 1e-3 // convert to s
+
+	cvP = dxP/dtP
+	cvC = dxC/dtC
+	cvS = dxS/dtS
+}
+*/
+
+
+
+proc define_geometry() {
+	
+	forall pt3dclear()
+
+	// peripheral axon
+	for i=0, axonnodesP-2 {
+		//load in the coordinates of the surrounding nodes to determine the MYSA, FLUT, and STIN coordinates in between
+		//convert all coordinates to um
+
+		x0 = nxP.x[i] * 1e6
+		y0 = nyP.x[i] * 1e6
+		z0 = nzP.x[i] * 1e6
+		x1 = nxP.x[i+1] * 1e6
+		y1 = nyP.x[i+1] * 1e6
+		z1 = nzP.x[i+1] * 1e6
+		P0P1 = sqrt((x1-x0)^2+(y1-y0)^2+(z1-z0)^2)
+
+		if (i==0) {	//define the first node of the peripheral axon, only need to define for first node, because remaining nodes are defined at the end of the loop
+			t0 = (-1*nodelength/2)/P0P1
+			t1 = t0+nodelength/P0P1
+			xx0 = (1-t0)*x0 + t0*x1
+			yy0 = (1-t0)*y0 + t0*y1
+			zz0 = (1-t0)*z0 + t0*z1
+			xx1 = (1-t1)*x0 + t1*x1
+			yy1 = (1-t1)*y0 + t1*y1
+			zz1 = (1-t1)*z0 + t1*z1
+			nodeP[i]{ 
+				pt3dadd(xx0,yy0,zz0,nodeP[i].diam)
+				pt3dadd(xx1,yy1,zz1,nodeP[i].diam) }
+		}
+
+		//first MYSA compartment
+		t0 = nodelength/2/P0P1
+		t1 = t0+paralength1/P0P1
+		xx0 = (1-t0)*x0 + t0*x1
+		yy0 = (1-t0)*y0 + t0*y1
+		zz0 = (1-t0)*z0 + t0*z1
+		xx1 = (1-t1)*x0 + t1*x1
+		yy1 = (1-t1)*y0 + t1*y1
+		zz1 = (1-t1)*z0 + t1*z1
+		MYSAP[2*i]{ 
+			pt3dadd(xx0,yy0,zz0,MYSAP[2*i].diam)
+			pt3dadd(xx1,yy1,zz1,MYSAP[2*i].diam) }
+
+		//first FLUT compartment		
+		t0 = t1
+		t1 = t0+paralength2_peripheral/P0P1
+		xx0 = (1-t0)*x0 + t0*x1
+		yy0 = (1-t0)*y0 + t0*y1
+		zz0 = (1-t0)*z0 + t0*z1
+		xx1 = (1-t1)*x0 + t1*x1
+		yy1 = (1-t1)*y0 + t1*y1
+		zz1 = (1-t1)*z0 + t1*z1
+		FLUTP[2*i]{ 
+			pt3dadd(xx0,yy0,zz0,FLUTP[2*i].diam)
+			pt3dadd(xx1,yy1,zz1,FLUTP[2*i].diam) }
+
+
+		if (variable_STIN == 1) {
+			if (i <= numNodes20mmPeripheral-1) {
+				for gg = 0,nstins-1 {
+					t0 = t1
+					t1 = t0+STINP[nstins*i+gg].L/P0P1
+					xx0 = (1-t0)*x0 + t0*x1
+					yy0 = (1-t0)*y0 + t0*y1
+					zz0 = (1-t0)*z0 + t0*z1
+					xx1 = (1-t1)*x0 + t1*x1
+					yy1 = (1-t1)*y0 + t1*y1
+					zz1 = (1-t1)*z0 + t1*z1
+					STINP[nstins*i+gg]{ 
+						pt3dadd(xx0,yy0,zz0,STINP[nstins*i+gg].diam)
+						pt3dadd(xx1,yy1,zz1,STINP[nstins*i+gg].diam) }
+				}
+			} else {
+				t0 = t1
+				t1 = t0+STINPvar[i-numNodes20mmPeripheral].L/P0P1
+				xx0 = (1-t0)*x0 + t0*x1
+				yy0 = (1-t0)*y0 + t0*y1
+				zz0 = (1-t0)*z0 + t0*z1
+				xx1 = (1-t1)*x0 + t1*x1
+				yy1 = (1-t1)*y0 + t1*y1
+				zz1 = (1-t1)*z0 + t1*z1
+				STINPvar[i-numNodes20mmPeripheral]{ 
+					pt3dadd(xx0,yy0,zz0,STINPvar[i-numNodes20mmPeripheral].diam)
+					pt3dadd(xx1,yy1,zz1,STINPvar[i-numNodes20mmPeripheral].diam) }
+			}
+		} else {
+			//STIN compartments, need to have defined the number of STIN compartments per internode
+			for gg = 0,nstins-1 {
+				t0 = t1
+				t1 = t0+STINP[nstins*i+gg].L/P0P1
+				xx0 = (1-t0)*x0 + t0*x1
+				yy0 = (1-t0)*y0 + t0*y1
+				zz0 = (1-t0)*z0 + t0*z1
+				xx1 = (1-t1)*x0 + t1*x1
+				yy1 = (1-t1)*y0 + t1*y1
+				zz1 = (1-t1)*z0 + t1*z1
+				STINP[nstins*i+gg]{ 
+					pt3dadd(xx0,yy0,zz0,STINP[nstins*i+gg].diam)
+					pt3dadd(xx1,yy1,zz1,STINP[nstins*i+gg].diam) }
+			}
+		}
+
+		//second FLUT compartment
+		t0 = t1
+		t1 = t0+paralength2_peripheral/P0P1
+		xx0 = (1-t0)*x0 + t0*x1
+		yy0 = (1-t0)*y0 + t0*y1
+		zz0 = (1-t0)*z0 + t0*z1
+		xx1 = (1-t1)*x0 + t1*x1
+		yy1 = (1-t1)*y0 + t1*y1
+		zz1 = (1-t1)*z0 + t1*z1
+		FLUTP[2*i+1]{ 
+			pt3dadd(xx0,yy0,zz0,FLUTP[2*i+1].diam)
+			pt3dadd(xx1,yy1,zz1,FLUTP[2*i+1].diam) }
+
+		//second MYSA compartment
+		t0 = t1
+		t1 = t0+paralength1/P0P1
+		xx0 = (1-t0)*x0 + t0*x1
+		yy0 = (1-t0)*y0 + t0*y1
+		zz0 = (1-t0)*z0 + t0*z1
+		xx1 = (1-t1)*x0 + t1*x1
+		yy1 = (1-t1)*y0 + t1*y1
+		zz1 = (1-t1)*z0 + t1*z1
+		MYSAP[2*i+1]{ 
+			pt3dadd(xx0,yy0,zz0,MYSAP[2*i+1].diam)
+			pt3dadd(xx1,yy1,zz1,MYSAP[2*i+1].diam) }
+
+		//second node of Ranvier
+		t0 = t1
+		t1 = t0+nodelength/P0P1
+		xx0 = (1-t0)*x0 + t0*x1
+		yy0 = (1-t0)*y0 + t0*y1
+		zz0 = (1-t0)*z0 + t0*z1
+		xx1 = (1-t1)*x0 + t1*x1
+		yy1 = (1-t1)*y0 + t1*y1
+		zz1 = (1-t1)*z0 + t1*z1
+		nodeP[i+1]{ 
+			pt3dadd(xx0,yy0,zz0,nodeP[i+1].diam)
+			pt3dadd(xx1,yy1,zz1,nodeP[i+1].diam) }
+	}
+
+
+	// stem axon
+	for i=0, axonnodesT-2 {
+		//load in the coordinates of the surrounding nodes to determine the MYSA, FLUT, and STIN coordinates in between
+		//convert all coordinates to um
+		x0 = nxT.x[i] * 1e6
+		y0 = nyT.x[i] * 1e6
+		z0 = nzT.x[i] * 1e6
+		x1 = nxT.x[i+1] * 1e6
+		y1 = nyT.x[i+1] * 1e6
+		z1 = nzT.x[i+1] * 1e6
+		P0P1 = sqrt((x1-x0)^2+(y1-y0)^2+(z1-z0)^2)
+
+		if (i==0) {	//define the first node of the peripheral axon, only need to define for first node, because remaining nodes are defined at the end of the loop
+			//t0 = (-1*nodelength/2)/P0P1
+			t0 = 0
+			t1 = t0+nodelength/P0P1
+			xx0 = (1-t0)*x0 + t0*x1
+			yy0 = (1-t0)*y0 + t0*y1
+			zz0 = (1-t0)*z0 + t0*z1
+			xx1 = (1-t1)*x0 + t1*x1
+			yy1 = (1-t1)*y0 + t1*y1
+			zz1 = (1-t1)*z0 + t1*z1
+			nodeT[i]{ 
+				pt3dadd(xx0,yy0,zz0,nodeT[i].diam)
+				pt3dadd(xx1,yy1,zz1,nodeT[i].diam) }
+		}
+
+		//first MYSA compartment
+		t0 = nodelength/P0P1
+		t1 = t0+paralength1/P0P1
+		xx0 = (1-t0)*x0 + t0*x1
+		yy0 = (1-t0)*y0 + t0*y1
+		zz0 = (1-t0)*z0 + t0*z1
+		xx1 = (1-t1)*x0 + t1*x1
+		yy1 = (1-t1)*y0 + t1*y1
+		zz1 = (1-t1)*z0 + t1*z1
+		MYSAT[2*i]{ 
+			pt3dadd(xx0,yy0,zz0,MYSAT[2*i].diam)
+			pt3dadd(xx1,yy1,zz1,MYSAT[2*i].diam) }
+
+		//first FLUT compartment		
+		t0 = t1
+		t1 = t0+FLUTT[2*i].L/P0P1
+		xx0 = (1-t0)*x0 + t0*x1
+		yy0 = (1-t0)*y0 + t0*y1
+		zz0 = (1-t0)*z0 + t0*z1
+		xx1 = (1-t1)*x0 + t1*x1
+		yy1 = (1-t1)*y0 + t1*y1
+		zz1 = (1-t1)*z0 + t1*z1
+		FLUTT[2*i]{ 
+			pt3dadd(xx0,yy0,zz0,FLUTT[2*i].diam)
+			pt3dadd(xx1,yy1,zz1,FLUTT[2*i].diam) }
+
+		//STIN compartments, need to have defined the number of STIN compartments per internode
+		for gg = 0,nstins-1 {
+			t0 = t1
+			t1 = t0+STINT[nstins*i+gg].L/P0P1
+			xx0 = (1-t0)*x0 + t0*x1
+			yy0 = (1-t0)*y0 + t0*y1
+			zz0 = (1-t0)*z0 + t0*z1
+			xx1 = (1-t1)*x0 + t1*x1
+			yy1 = (1-t1)*y0 + t1*y1
+			zz1 = (1-t1)*z0 + t1*z1
+			STINT[nstins*i+gg]{ 
+				pt3dadd(xx0,yy0,zz0,STINT[nstins*i+gg].diam)
+				pt3dadd(xx1,yy1,zz1,STINT[nstins*i+gg].diam) }
+		}
+
+		//second FLUT compartment
+		t0 = t1
+		t1 = t0+FLUTT[2*i+1].L/P0P1
+		xx0 = (1-t0)*x0 + t0*x1
+		yy0 = (1-t0)*y0 + t0*y1
+		zz0 = (1-t0)*z0 + t0*z1
+		xx1 = (1-t1)*x0 + t1*x1
+		yy1 = (1-t1)*y0 + t1*y1
+		zz1 = (1-t1)*z0 + t1*z1
+		FLUTT[2*i+1]{ 
+			pt3dadd(xx0,yy0,zz0,FLUTT[2*i+1].diam)
+			pt3dadd(xx1,yy1,zz1,FLUTT[2*i+1].diam) }
+
+		//second MYSA compartment
+		t0 = t1
+		t1 = t0+paralength1/P0P1
+		xx0 = (1-t0)*x0 + t0*x1
+		yy0 = (1-t0)*y0 + t0*y1
+		zz0 = (1-t0)*z0 + t0*z1
+		xx1 = (1-t1)*x0 + t1*x1
+		yy1 = (1-t1)*y0 + t1*y1
+		zz1 = (1-t1)*z0 + t1*z1
+		MYSAT[2*i+1]{ 
+			pt3dadd(xx0,yy0,zz0,MYSAT[2*i+1].diam)
+			pt3dadd(xx1,yy1,zz1,MYSAT[2*i+1].diam) }
+
+		//second node of Ranvier
+		t0 = t1
+		t1 = t0+nodelength/P0P1
+		xx0 = (1-t0)*x0 + t0*x1
+		yy0 = (1-t0)*y0 + t0*y1
+		zz0 = (1-t0)*z0 + t0*z1
+		xx1 = (1-t1)*x0 + t1*x1
+		yy1 = (1-t1)*y0 + t1*y1
+		zz1 = (1-t1)*z0 + t1*z1
+		nodeT[i+1]{ 
+			pt3dadd(xx0,yy0,zz0,nodeT[i+1].diam)
+			pt3dadd(xx1,yy1,zz1,nodeT[i+1].diam) }
+
+		// if you've finished the axon, build the initial segment and soma
+		if (i==axonnodesT-2){
+			x0 = nxT.x[i+1] * 1e6
+			y0 = nyT.x[i+1] * 1e6
+			z0 = nzT.x[i+1] * 1e6
+			x1 = nxT.x[i+2] * 1e6
+			y1 = nyT.x[i+2] * 1e6
+			z1 = nzT.x[i+2] * 1e6
+			P0P1 = sqrt((x1-x0)^2+(y1-y0)^2+(z1-z0)^2) - 1
+
+			t0 = t1
+			t1 = t0+soma.L/P0P1
+			xx0 = (1-t0)*x0 + t0*x1
+			yy0 = (1-t0)*y0 + t0*y1
+			zz0 = (1-t0)*z0 + t0*z1
+			xx1 = (1-t1)*x0 + t1*x1
+			yy1 = (1-t1)*y0 + t1*y1
+			zz1 = (1-t1)*z0 + t1*z1
+
+			soma {
+				pt3dadd(xx0,yy0,zz0,soma.diam)
+				pt3dadd(xx1,yy1,zz1,soma.diam)
+			}
+			break
+		}
+	}
+
+	// central axon
+	for i=0, axonnodesC-2 {
+		//load in the coordinates of the surrounding nodes to determine the MYSA, FLUT, and STIN coordinates in between
+		//convert all coordinates to um
+		x0 = nxC.x[i] * 1e6
+		y0 = nyC.x[i] * 1e6
+		z0 = nzC.x[i] * 1e6
+		x1 = nxC.x[i+1] * 1e6
+		y1 = nyC.x[i+1] * 1e6
+		z1 = nzC.x[i+1] * 1e6
+		P0P1 = sqrt((x1-x0)^2+(y1-y0)^2+(z1-z0)^2)
+
+		if (i==0) {	//define the first node of the central axon, only need to define for first node, because remaining nodes are defined at the end of the loop
+			//t0 = (-1*nodelength/2)/P0P1
+			t0 = 0
+			t1 = t0+nodelength/P0P1
+			xx0 = (1-t0)*x0 + t0*x1
+			yy0 = (1-t0)*y0 + t0*y1
+			zz0 = (1-t0)*z0 + t0*z1
+			xx1 = (1-t1)*x0 + t1*x1
+			yy1 = (1-t1)*y0 + t1*y1
+			zz1 = (1-t1)*z0 + t1*z1
+			nodeC[i]{ 
+				pt3dadd(xx0,yy0,zz0,nodeC[i].diam)
+				pt3dadd(xx1,yy1,zz1,nodeC[i].diam) }
+		}
+
+		//first MYSA compartment
+		t0 = nodelength/2/P0P1
+		t1 = t0+paralength1/P0P1
+		xx0 = (1-t0)*x0 + t0*x1
+		yy0 = (1-t0)*y0 + t0*y1
+		zz0 = (1-t0)*z0 + t0*z1
+		xx1 = (1-t1)*x0 + t1*x1
+		yy1 = (1-t1)*y0 + t1*y1
+		zz1 = (1-t1)*z0 + t1*z1
+		MYSAC[2*i]{ 
+			pt3dadd(xx0,yy0,zz0,MYSAC[2*i].diam)
+			pt3dadd(xx1,yy1,zz1,MYSAC[2*i].diam) }
+
+		//first FLUT compartment		
+		t0 = t1
+		t1 = t0+paralength2_central/P0P1
+		xx0 = (1-t0)*x0 + t0*x1
+		yy0 = (1-t0)*y0 + t0*y1
+		zz0 = (1-t0)*z0 + t0*z1
+		xx1 = (1-t1)*x0 + t1*x1
+		yy1 = (1-t1)*y0 + t1*y1
+		zz1 = (1-t1)*z0 + t1*z1
+		FLUTC[2*i]{ 
+			pt3dadd(xx0,yy0,zz0,FLUTC[2*i].diam)
+			pt3dadd(xx1,yy1,zz1,FLUTC[2*i].diam) }
+
+		if (variable_STIN == 1) {
+			if (i <= numNodes20mmCentral-1) {
+				for gg = 0,nstins-1 {
+					t0 = t1
+					t1 = t0+STINC[nstins*i+gg].L/P0P1
+					xx0 = (1-t0)*x0 + t0*x1
+					yy0 = (1-t0)*y0 + t0*y1
+					zz0 = (1-t0)*z0 + t0*z1
+					xx1 = (1-t1)*x0 + t1*x1
+					yy1 = (1-t1)*y0 + t1*y1
+					zz1 = (1-t1)*z0 + t1*z1
+					STINC[nstins*i+gg]{ 
+						pt3dadd(xx0,yy0,zz0,STINC[nstins*i+gg].diam)
+						pt3dadd(xx1,yy1,zz1,STINC[nstins*i+gg].diam) }
+				}
+			} else {
+				t0 = t1
+				t1 = t0+STINCvar[i-numNodes20mmCentral].L/P0P1
+				xx0 = (1-t0)*x0 + t0*x1
+				yy0 = (1-t0)*y0 + t0*y1
+				zz0 = (1-t0)*z0 + t0*z1
+				xx1 = (1-t1)*x0 + t1*x1
+				yy1 = (1-t1)*y0 + t1*y1
+				zz1 = (1-t1)*z0 + t1*z1
+				STINCvar[i-numNodes20mmCentral]{ 
+					pt3dadd(xx0,yy0,zz0,STINCvar[i-numNodes20mmCentral].diam)
+					pt3dadd(xx1,yy1,zz1,STINCvar[i-numNodes20mmCentral].diam) }
+			}
+		} else {
+			for gg = 0,nstins-1 {
+				t0 = t1
+				t1 = t0+STINC[nstins*i+gg].L/P0P1
+				xx0 = (1-t0)*x0 + t0*x1
+				yy0 = (1-t0)*y0 + t0*y1
+				zz0 = (1-t0)*z0 + t0*z1
+				xx1 = (1-t1)*x0 + t1*x1
+				yy1 = (1-t1)*y0 + t1*y1
+				zz1 = (1-t1)*z0 + t1*z1
+				STINC[nstins*i+gg]{ 
+					pt3dadd(xx0,yy0,zz0,STINC[nstins*i+gg].diam)
+					pt3dadd(xx1,yy1,zz1,STINC[nstins*i+gg].diam) }
+			}
+		}
+
+		//second FLUT compartment
+		t0 = t1
+		t1 = t0+paralength2_central/P0P1
+		xx0 = (1-t0)*x0 + t0*x1
+		yy0 = (1-t0)*y0 + t0*y1
+		zz0 = (1-t0)*z0 + t0*z1
+		xx1 = (1-t1)*x0 + t1*x1
+		yy1 = (1-t1)*y0 + t1*y1
+		zz1 = (1-t1)*z0 + t1*z1
+		FLUTC[2*i+1]{ 
+			pt3dadd(xx0,yy0,zz0,FLUTC[2*i+1].diam)
+			pt3dadd(xx1,yy1,zz1,FLUTC[2*i+1].diam) }
+
+		//second MYSA compartment
+		t0 = t1
+		t1 = t0+paralength1/P0P1
+		xx0 = (1-t0)*x0 + t0*x1
+		yy0 = (1-t0)*y0 + t0*y1
+		zz0 = (1-t0)*z0 + t0*z1
+		xx1 = (1-t1)*x0 + t1*x1
+		yy1 = (1-t1)*y0 + t1*y1
+		zz1 = (1-t1)*z0 + t1*z1
+		MYSAC[2*i+1]{ 
+			pt3dadd(xx0,yy0,zz0,MYSAC[2*i+1].diam)
+			pt3dadd(xx1,yy1,zz1,MYSAC[2*i+1].diam) }
+
+		//second node of Ranvier
+		t0 = t1
+		t1 = t0+nodelength/P0P1
+		xx0 = (1-t0)*x0 + t0*x1
+		yy0 = (1-t0)*y0 + t0*y1
+		zz0 = (1-t0)*z0 + t0*z1
+		xx1 = (1-t1)*x0 + t1*x1
+		yy1 = (1-t1)*y0 + t1*y1
+		zz1 = (1-t1)*z0 + t1*z1
+		nodeC[i+1]{ 
+			pt3dadd(xx0,yy0,zz0,nodeC[i+1].diam)
+			pt3dadd(xx1,yy1,zz1,nodeC[i+1].diam) }
+	}
+}
+define_geometry()
+print "FINISHED DEFINING GEOMETRY"
+
+
+
+
