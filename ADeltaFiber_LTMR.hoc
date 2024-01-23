@@ -23,41 +23,6 @@ proc model_globels() {
 	nvarstins=numberOfStinCompartmentsPerVariableStretch
 
 
-/*	
-	fiberD_central = 2.0
-	fiberD_peripheral = 5.7
-	fiberD_stem = fiberD_peripheral
-	deltaxC = 117*1e-6
-	deltaxP = 500*1e-6
-*/
-
-/*
-	fiberD_central = 2.0
-	//fiberD_central = 3.0
-	fiberD_peripheral = 3.0
-	//fiberD_peripheral = 5.7
-	fiberD_stem = fiberD_peripheral
-	deltaxC = 117*1e-6
-	//deltaxC = 309*1e-6
-	deltaxP = 309*1e-6
-	//deltaxP = 500*1e-6
-
-	nstins = 6
-	pain = 0
-
-	axonnodesP = 100
-	axonnodesC = 100
-	axonnodesT = 5
-	paranodes1P = 2*(axonnodesP-1)
-	paranodes1C = 2*(axonnodesC-1)
-	paranodes1T = 2*(axonnodesT-1)
-	paranodes2P = 2*(axonnodesP-1)
-	paranodes2C = 2*(axonnodesC-1)
-	paranodes2T = 2*(axonnodesT-1)
-	axoninterP = nstins*(axonnodesP-1)
-	axoninterC = nstins*(axonnodesC-1)
-	axoninterT = nstins*(axonnodesT-1)
-*/
 
 //electrical parameters//		
 	rhoa=0.7e6 //Ohm-um//
@@ -66,28 +31,6 @@ proc model_globels() {
 	}
 model_globels()
 
-/*
-objref varLenP
-objref varLenC
-varLenP = new Vector(3)
-varLenC = new Vector(3)	
-
-ratio1stInternodeC = (358*1e-6)/(1450*1e-6)
-ratio2ndInternodeC = (780*1e-6)/(1450*1e-6)
-ratio3rdInternodeC = (1170*1e-6)/(1450*1e-6)
-
-ratio1stInternodeP = (461*1e-6)/(1567*1e-6)
-ratio2ndInternodeP = (670*1e-6)/(1567*1e-6)
-ratio3rdInternodeP = (1119*1e-6)/(1567*1e-6)
-
-varLenP.x[0] = ratio1stInternodeP * deltaxP
-varLenP.x[1] = ratio2ndInternodeP * deltaxP
-varLenP.x[2] = ratio3rdInternodeP * deltaxP
-
-varLenC.x[0] = ratio1stInternodeC * deltaxC
-varLenC.x[1] = ratio2ndInternodeC * deltaxC
-varLenC.x[2] = ratio3rdInternodeC * deltaxC
-*/
 
 proc dependent_var() {
 	// central axon variables
@@ -420,14 +363,7 @@ proc buildCell(){
 		e_pas = v_init
 		insert extracellular xraxial=Rpn0_soma xg=1e10 xc=0	
 
-		// right now at ~48 Hz
-		//if (pain==1) {
-		//	gna1p6bar_nav1p6 = 1.7
-		//	gkdrbar_kdr = gkdrbar_kdr - (0.20 * gkdrbar_kdr)
-		//	gkabar_ka = gkabar_ka - (0.20 * gkabar_ka)	
-		//}
 
-		// right now at ~35 Hz
 		if (pain==1) {
 			gna1p6bar_nav1p6 = 1.67
 			gkdrbar_kdr = gkdrbar_kdr - (0.20 * gkdrbar_kdr)
@@ -559,64 +495,6 @@ proc initialize(){
 	fcurrent()
 }
 initialize()
-
-/*
-objref apc
-soma apc = new APCount(0.5)
-apc.thresh = 0
-*/
-
-/*
-objref apcP1, apcP2, apcC1, apcC2, apcS1, apcS2
-objref p1Times, p2Times, c1Times, c2Times, s1Times, s2Times
-nodeP[60] apcP1 = new APCount(0.5)
-nodeP[20] apcP2 = new APCount(0.5)
-nodeC[20] apcC1 = new APCount(0.5)
-nodeC[60] apcC2 = new APCount(0.5)
-nodeT[0] apcS1 = new APCount(0.5)
-nodeT[4] apcS2 = new APCount(0.5)
-p1Times = new Vector()
-p2Times = new Vector()
-c1Times = new Vector()
-c2Times = new Vector()
-s1Times = new Vector()
-s2Times = new Vector()
-apcP1.thresh = 0
-apcP2.thresh = 0
-apcC1.thresh = 0
-apcC2.thresh = 0
-apcS1.thresh = 0
-apcS2.thresh = 0
-apcP1.record(p1Times)
-apcP2.record(p2Times)
-apcC1.record(c1Times)
-apcC2.record(c2Times)
-apcS1.record(s1Times)
-apcS2.record(s2Times)
-
-
-objectvar stim
-nodeP[80] stim = new IClamp(0.5)
-stim.amp = 0
-stim.dur = 0.2
-stim.del = 5
-
-
-
-proc cv() {
-	dxP = (deltax_peripheral * 40) * 1e-6 // 40 total nodes, convert to m
-	dxC = (deltax_central * 40) * 1e-6 // 40 total nodes, convet to m
-	dxS = (deltax_stem * 5) * 1e-6 // 5 total nodes, convet to m
-	dtP = (p2Times.x[0] - p1Times.x[0]) * 1e-3 // convert to s
-	dtC = (c2Times.x[0] - c1Times.x[0]) * 1e-3 // convert to s
-	dtS = (s2Times.x[0] - s1Times.x[0]) * 1e-3 // convert to s
-
-	cvP = dxP/dtP
-	cvC = dxC/dtC
-	cvS = dxS/dtS
-}
-*/
-
 
 
 proc define_geometry() {
