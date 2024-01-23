@@ -1,4 +1,4 @@
-
+# Function to create node coordinates, called from Cell.py
 
 
 def find_devor_node_coordinates(axon_trajectory, axonName, axonType, fiberD):
