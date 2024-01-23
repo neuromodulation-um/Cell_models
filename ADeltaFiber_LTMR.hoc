@@ -148,7 +148,7 @@ proc dependent_var() {
 	somaL = 29 // Yoshida and Matsuda 1979 --> minor axis | also see Harper and Lawson 1985
 	Rpn0_soma = (rhoa*.01)/(PI*((((somaD/2)+space_p1)^2)-((somaD/2)^2)))
 
-	// temporarily setting this deltax value so cell stays within ganglion
+	// setting this deltax value
 	deltax_stem = 80
 	interlength_stem=(deltax_stem-nodelength-(2*paralength1)-(2*paralength2_stem))/6
 	}
