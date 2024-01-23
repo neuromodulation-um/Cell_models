@@ -1,14 +1,14 @@
 /*
 Robert Graham | January, 2019
-	Model of a putative nociceptive ADelta fiber.
-	Nociceptive ADelta fibers likely express sodium channels like Nav1.7 and Nav1.8 similar to C-fibers
+	Model of a putative LTM or D-hair ADelta fiber.
+	Mechanosensitive ADelta fibers likely express sodium channels like Nav1.6 similar to ABetas
 	For review, see Bennett et al 2019, Physiol Rev
 NEURON 7.4
 */
 
 proc model_globels() {			
 	celsius=37			
-	v_init=-55 //mV//  		
+	v_init=-55 //mV//
 	//dt=0.005 //ms//         	
 //topological parameters//		
 	//defines: axonnodes; paranodes1; paranodes2; axoninter; axontotal
@@ -21,7 +21,6 @@ proc model_globels() {
 	space_i=0.004
 	nstins=numberOfStinCompartmentsPerStretch
 	nvarstins=numberOfStinCompartmentsPerVariableStretch
-
 
 
 /*	
@@ -44,7 +43,6 @@ proc model_globels() {
 	//deltaxP = 500*1e-6
 
 	nstins = 6
-	nvarstins = 1
 	pain = 0
 
 	axonnodesP = 100
@@ -65,7 +63,7 @@ proc model_globels() {
 	rhoa=0.7e6 //Ohm-um//
 	mycm=0.1 //uF/cm2/lamella membrane//
 	mygm=0.001 //S/cm2/lamella membrane//
-}
+	}
 model_globels()
 
 /*
@@ -186,13 +184,16 @@ proc buildCell(){
 			L=nodelength
 			Ra=rhoa/10000
 			cm=2
-			insert nav1p7
-			insert nav1p8
+			insert nav1p6
+			gna1p6bar_nav1p6 = 3.0
 			insert kdr
 			insert ka
+			insert pas
+			g_pas = 0.006
+			e_pas = v_init
 			insert extracellular xraxial=Rpn0_peripheral xg=1e10 xc=0
-			}
 		}
+	}
 	// initialize central nodes
 	for i=0, axonnodesC-1 {
 		nodeC[i]{
@@ -201,10 +202,13 @@ proc buildCell(){
 			L=nodelength
 			Ra=rhoa/10000
 			cm=2
-			insert nav1p7
-			insert nav1p8
+			insert nav1p6
+			gna1p6bar_nav1p6 = 3.0
 			insert kdr
 			insert ka
+			insert pas
+			g_pas = 0.006
+			e_pas = v_init
 			insert extracellular xraxial=Rpn0_central xg=1e10 xc=0
 		}
 	}
@@ -215,10 +219,13 @@ proc buildCell(){
 			L=nodelength
 			Ra=rhoa/10000
 			cm=2
-			insert nav1p7
-			insert nav1p8
+			insert nav1p6
+			gna1p6bar_nav1p6 = 3.0
 			insert kdr
 			insert ka
+			insert pas
+			g_pas = 0.006
+			e_pas = v_init
 			insert extracellular xraxial=Rpn0_stem xg=1e10 xc=0
 		}
 	}
@@ -233,8 +240,8 @@ proc buildCell(){
 			g_pas=0.001*paraD1_peripheral/fiberD_peripheral
 			e_pas=v_init
 			insert extracellular xraxial=Rpn1_peripheral xg=mygm/(nl_peripheral*2) xc=mycm/(nl_peripheral*2)
-			}
 		}
+	}
 	for i=0, paranodes1C-1 {
 		MYSAC[i]{
 			nseg=1
@@ -246,7 +253,7 @@ proc buildCell(){
 			g_pas=0.001*paraD1_central/fiberD_central
 			e_pas=v_init
 			insert extracellular xraxial=Rpn1_central xg=mygm/(nl_central*2) xc=mycm/(nl_central*2)
-			}
+		}
 	}
 	for i=0, paranodes1T-1 {
 		MYSAT[i] {
@@ -277,8 +284,8 @@ proc buildCell(){
 			g_pas=0.0001*paraD2_peripheral/fiberD_peripheral
 			e_pas=v_init
 			insert extracellular xraxial=Rpn2_peripheral xg=mygm/(nl_peripheral*2) xc=mycm/(nl_peripheral*2)
-			}
 		}
+	}
 	for i=0, paranodes2C-1 {
 		FLUTC[i]{
 			nseg=1
@@ -290,7 +297,7 @@ proc buildCell(){
 			g_pas=0.0001*paraD2_central/fiberD_central
 			e_pas=v_init
 			insert extracellular xraxial=Rpn2_central xg=mygm/(nl_central*2) xc=mycm/(nl_central*2)
-			}
+		}
 	}
 	for i=0, paranodes2T-1 {
 		FLUTT[i] {
@@ -313,8 +320,7 @@ proc buildCell(){
 		}
 	}
 	for i=0, axoninterP-1 {
-		STINP[i]{ // hardcode the first couple interlengths (Ito & Takahashi 1960, Amir and Devor 2003)
-		
+		STINP[i]{
 			// account for normalizing variable internode lengths
 			if (i>=0 && i<=5)   { len=(varLenP.x[0]*1e6 - nodelength - (2*paralength1) - (2*paralength2_peripheral))/6  } // first internode
 			if (i>=6 && i<=11)  { len=(varLenP.x[1]*1e6 - nodelength - (2*paralength1) - (2*paralength2_peripheral))/6  } // second internode
@@ -329,10 +335,10 @@ proc buildCell(){
 			g_pas=0.0001*axonD_peripheral/fiberD_peripheral
 			e_pas=v_init
 			insert extracellular xraxial=Rpx_peripheral xg=mygm/(nl_peripheral*2) xc=mycm/(nl_peripheral*2)
-			}
 		}
+	}
 	for i=0, axoninterC-1 {
-		STINC[i]{ // hardcode the first couple interlengths (Ito & Takahashi 1960, Amir and Devor 2003)
+		STINC[i]{
 			// account for normalizing variable internode lengths
 			if (i>=0 && i<=5)   { len=(varLenC.x[0]*1e6 - nodelength - (2*paralength1) - (2*paralength2_central))/6  } // first internode
 			if (i>=6 && i<=11)  { len=(varLenC.x[1]*1e6 - nodelength - (2*paralength1) - (2*paralength2_central))/6  } // second internode
@@ -347,10 +353,10 @@ proc buildCell(){
 			g_pas=0.0001*axonD_central/fiberD_central
 			e_pas=v_init
 			insert extracellular xraxial=Rpx_central xg=mygm/(nl_central*2) xc=mycm/(nl_central*2)
-			}
+		}
 	}
 	for i=0, axoninterT-1 {
-		STINT[i] { // hardcode the first couple interlengths (Ito & Takahashi 1960, Amir and Devor 2003)
+		STINT[i] {
 			// changed paralength2 to 21, since the smallest MRG fiberD (less than 201 um) has paralength2 of 21
 			if (i>=0 && i<=5)   { len=(260 - nodelength - (2*paralength1) - (2*21))/6  nl_stem_tmp=nl_stem*1.0} // first internode
 			if (i>=6 && i<=11)  { len=(241 - nodelength - (2*paralength1) - (2*21))/6  nl_stem_tmp=nl_stem*0.66197} // second internode
@@ -405,34 +411,28 @@ proc buildCell(){
 		nseg = 1
 		cm = 2
 		Ra=rhoa/10000
-		insert nav1p7
-		insert nav1p8
+		insert nav1p6
+		gna1p6bar_nav1p6 = 1.0
 		insert kdr
 		insert ka
+		insert pas
+		g_pas = 0.006
+		e_pas = v_init
 		insert extracellular xraxial=Rpn0_soma xg=1e10 xc=0	
-	}
-	forsec "node" {
-		gna1p7bar_nav1p7 = 3.0
-		gna1p8bar_nav1p8 = 3.0
-		insert pas
-		g_pas = 0.002
-		e_pas = v_init
-	}
-	soma {
-		gna1p8bar_nav1p8 = 0.3
-		gkdrbar_kdr = 0.006
-		gkabar_ka = 0.28
 
-		insert pas
-		g_pas = 0.002
-		e_pas = v_init
-
+		// right now at ~48 Hz
 		//if (pain==1) {
-		//	gna1p7bar_nav1p7 = gna1p7bar_nav1p7 * 1.5
-		//	gna1p8bar_nav1p8 = gna1p8bar_nav1p8 * 1.5
+		//	gna1p6bar_nav1p6 = 1.7
 		//	gkdrbar_kdr = gkdrbar_kdr - (0.20 * gkdrbar_kdr)
 		//	gkabar_ka = gkabar_ka - (0.20 * gkabar_ka)	
 		//}
+
+		// right now at ~35 Hz
+		if (pain==1) {
+			gna1p6bar_nav1p6 = 1.67
+			gkdrbar_kdr = gkdrbar_kdr - (0.20 * gkdrbar_kdr)
+			gkabar_ka = gkabar_ka - (0.20 * gkabar_ka)	
+		}
 	}
 }
 buildCell()
@@ -565,6 +565,7 @@ objref apc
 soma apc = new APCount(0.5)
 apc.thresh = 0
 */
+
 /*
 objref apcP1, apcP2, apcC1, apcC2, apcS1, apcS2
 objref p1Times, p2Times, c1Times, c2Times, s1Times, s2Times
@@ -596,14 +597,12 @@ apcS2.record(s2Times)
 
 objectvar stim
 nodeP[80] stim = new IClamp(0.5)
-//iseg stim = new IClamp(0.5)
-//soma stim = new IClamp(0.5)
 stim.amp = 0
 stim.dur = 0.2
 stim.del = 5
-*/
 
-/*
+
+
 proc cv() {
 	dxP = (deltax_peripheral * 40) * 1e-6 // 40 total nodes, convert to m
 	dxC = (deltax_central * 40) * 1e-6 // 40 total nodes, convet to m
@@ -1037,7 +1036,5 @@ proc define_geometry() {
 }
 define_geometry()
 print "FINISHED DEFINING GEOMETRY"
-
-
 
 
