@@ -5,7 +5,7 @@ from neuron import h
 import neuron as nrn
 h.load_file("stdrun.hoc")
 from numpy import pi,shape,array,ones
-from find_node_coordinates import find_devor_node_coordinates, find_node_coordinates
+from find_node_coordinates import find_devor_node_coordinates
 
 import sys
 
