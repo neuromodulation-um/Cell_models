@@ -10,7 +10,7 @@ proc model_globels() {
 	v_init=-80 //mV//  		
 	//dt=0.005 //ms//         	
 //topological parameters//		
-	//see Python code, Cell.py under Class MRG
+
 	//defines: axonnodes; paranodes1; paranodes2; axoninter; axontotal
 //morphological parameters//	
 	//fiberD = see Python code	//choose from 2.0, 5.7, 7.3, 8.7, 10.0, 11.5, 12.8, 14.0, 15.0, 16.0
@@ -336,7 +336,7 @@ proc buildCell(){
 			}
 		}
 	for i=0, axoninterC-1 {
-		STINC[i]{ // hardcode the first couple interlengths (Ito & Takahashi 1960, Amir and Devor 2003)
+		STINC[i]{ // the first couple interlengths (Ito & Takahashi 1960, Amir and Devor 2003)
 			//if (i>=0 && i<=5)   { len=(358 - nodelength - (2*paralength1) - (2*paralength2_central))/6  } // first internode
 			//if (i>=6 && i<=11)  { len=(780 - nodelength - (2*paralength1) - (2*paralength2_central))/6  } // second internode
 			//if (i>=12 && i<=17) { len=(1170 - nodelength - (2*paralength1) - (2*paralength2_central))/6 } // third internode
@@ -361,7 +361,7 @@ proc buildCell(){
 			}
 	}
 	for i=0, axoninterT-1 {
-		STINT[i] { // hardcode the first couple interlengths (Ito & Takahashi 1960, Amir and Devor 2003)
+		STINT[i] { //the first couple interlengths (Ito & Takahashi 1960, Amir and Devor 2003)
 			// changed paralength2 to 35, since the smallest MRG fiberD (less than 201 um) has paralength2 of 35
 			if (i>=0 && i<=5)   { len=(201 - nodelength - (2*paralength1) - (2*35))/6  nl_stem_tmp=nl_stem*1.0} // first internode
 			if (i>=6 && i<=11)  { len=(168 - nodelength - (2*paralength1) - (2*35))/6  nl_stem_tmp=nl_stem*0.66197} // second internode
@@ -854,7 +854,7 @@ proc define_geometry() {
 		z1 = nzC.x[i+1] * 1e6
 		P0P1 = sqrt((x1-x0)^2+(y1-y0)^2+(z1-z0)^2)
 
-		if (i==0) {	//define the first node of the central axon, only need to define for first node, because remaining nodes are defined at the end of the loop
+		if (i==0) {	//define the first node of the central axon
 			//t0 = (-1*nodelength/2)/P0P1
 			t0 = 0
 			t1 = t0+nodelength/P0P1
