@@ -107,9 +107,6 @@ class ABetaFiber(Cell):
         self.NODE_COORDINATES_PERIPHERAL, dxPeripheral = find_devor_node_coordinates(self.peripheral_trajectory, 'peripheral', axonType='hybrid', fiberD=self.fiberD_peripheral)
         self.NODE_COORDINATES_STEM, dxDontUse = find_devor_node_coordinates(self.stem_trajectory, 'stemMRG', axonType='hybrid', fiberD=self.fiberD_stem)
 
-        # print(self.NODE_COORDINATES_DR)
-        # print(self.NODE_COORDINATES_PERIPHERAL)
-        # quit()
 
         self.numberOfStinCompartmentsPerStretch = 6
 
