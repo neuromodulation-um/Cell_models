@@ -311,7 +311,7 @@ proc buildCell(){
 		}
 	}
 	for i=0, axoninterP-1 {
-		STINP[i]{ // hardcode the first couple interlengths (Ito & Takahashi 1960, Amir and Devor 2003)
+		STINP[i]{ // the first couple interlengths (Ito & Takahashi 1960, Amir and Devor 2003)
 			//if (i>=0 && i<=5)   { len=(461 - nodelength - (2*paralength1) - (2*paralength2_peripheral))/6  } // first internode
 			//if (i>=6 && i<=11)  { len=(670 - nodelength - (2*paralength1) - (2*paralength2_peripheral))/6  } // second internode
 			//if (i>=12 && i<=17) { len=(1119 - nodelength - (2*paralength1) - (2*paralength2_peripheral))/6 } // third internode
